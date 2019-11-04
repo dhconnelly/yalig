@@ -23,15 +23,21 @@ func main() {
 		log.Fatal("Usage: yalig [file]")
 	}
 	p := NewParser(NewLexer(b))
+	e := NewEvaluator()
 	for {
+		// Read
 		expr, err := p.Parse()
 		if err == io.EOF {
 			break
+		} else if err != nil {
+			log.Fatal(err)
 		}
+		// Eval
+		result, err := e.Eval(expr)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println()
-		fmt.Println(expr)
+		// Print
+		fmt.Println(result)
 	}
 }

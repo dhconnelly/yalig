@@ -104,7 +104,7 @@ func (p *Parser) defExpr() (*DefExpr, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse def: %w", err)
 	}
-	return &DefExpr{name, binding}, nil
+	return &DefExpr{name.Ident, binding}, nil
 }
 
 func (p *Parser) ifExpr() (*IfExpr, error) {
