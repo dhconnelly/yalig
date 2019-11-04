@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type ValType int
@@ -43,6 +44,38 @@ func (v NumVal) Value() int {
 
 func (v NumVal) String() string {
 	return fmt.Sprintf("%d", v.Value())
+}
+
+type StrVal string
+
+func (StrVal) Type() ValType {
+	return StrT
+}
+
+func (s StrVal) Value() string {
+	return string(s)
+}
+
+func (s StrVal) String() string {
+	return s.Value()
+}
+
+type ListVal []Value
+
+func (ListVal) Type() ValType {
+	return ListT
+}
+
+func (l ListVal) Value() []Value {
+	return []Value(l)
+}
+
+func (l ListVal) String() string {
+	var elems []string
+	for _, elem := range l.Value() {
+		elems = append(elems, elem.String())
+	}
+	return "[" + strings.Join(elems, ", ") + "]"
 }
 
 type context struct {
@@ -121,10 +154,21 @@ func (ev *Evaluator) VisitSeq(e *SeqExpr) error {
 }
 
 func (ev *Evaluator) VisitList(e *ListExpr) error {
+	var elems []Value
+	for _, elem := range e.Elems {
+		val, err := ev.Eval(elem)
+		if err != nil {
+			return err
+		}
+		elems = append(elems, val)
+	}
+	ev.stack.push(ListVal(elems))
 	return nil
 }
 
 func (ev *Evaluator) VisitIdent(e *IdentExpr) error {
+	val := ev.ctx.get(e.Ident)
+	ev.stack.push(val)
 	return nil
 }
 
@@ -134,6 +178,7 @@ func (ev *Evaluator) VisitNum(e *NumExpr) error {
 }
 
 func (ev *Evaluator) VisitStr(e *StrExpr) error {
+	ev.stack.push(StrVal(e.Str))
 	return nil
 }
 
