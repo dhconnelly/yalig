@@ -2,18 +2,21 @@
 ; tokens: keywords, identifiers, numbers, parens
 ; types: number
 (def max 10)
-max
+(print max)
 
 ; syntax: list
 ; tokens: quotes
 ; types: list
 (def cases '(0 1 2 max))
-cases
+(print cases)
+
+(print (< 5 (+ 2 1)))
+(print (= (+ 3 7) max))
 
 ; syntax: string
 ; tokens: double-quotes
 ; types: string
-(def greeting "Some fibonacci numbers:\n")
+(def greeting "Some fibonacci numbers:")
 (print greeting)
 
 ; syntax: lambda, call, if

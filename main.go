@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	fmt.Println("== yalig!")
 	var b *bufio.Reader
 	switch len(os.Args) {
 	case 1:
@@ -33,11 +34,9 @@ func main() {
 			log.Fatal(err)
 		}
 		// Eval
-		result, err := e.Eval(expr)
+		_, err = e.Eval(expr)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// Print
-		fmt.Println(result)
 	}
 }
