@@ -13,6 +13,13 @@
 (print (< 5 (+ 2 1)))
 (print (= (+ 3 7) max))
 
+(print
+  (if (< 7 max) "zwei seelen wohnen ach" "in meiner brust"))
+
+(if (= 1 2)
+  (print "foo")
+  (print "bar"))
+
 ; syntax: string
 ; tokens: double-quotes
 ; types: string

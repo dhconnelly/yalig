@@ -100,6 +100,23 @@ func (ev *Evaluator) VisitDef(e *DefExpr) error {
 }
 
 func (ev *Evaluator) VisitIf(e *IfExpr) error {
+	antVal, err := ev.Eval(e.Antecedent)
+	if err != nil {
+		return err
+	}
+	if antVal.(BoolVal).Value() {
+		conVal, err := ev.Eval(e.Consequent)
+		if err != nil {
+			return err
+		}
+		ev.stack.push(conVal)
+	} else {
+		altVal, err := ev.Eval(e.Alternate)
+		if err != nil {
+			return err
+		}
+		ev.stack.push(altVal)
+	}
 	return nil
 }
 
