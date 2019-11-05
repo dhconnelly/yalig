@@ -18,7 +18,9 @@
 
 (if (= 1 2)
   (print "foo")
-  (print "bar"))
+  (seq
+    (print "bar")
+    (print "baz")))
 
 ; syntax: string
 ; tokens: double-quotes

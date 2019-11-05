@@ -121,6 +121,15 @@ func (ev *Evaluator) VisitIf(e *IfExpr) error {
 }
 
 func (ev *Evaluator) VisitSeq(e *SeqExpr) error {
+	var result Value
+	for _, expr := range e.Body {
+		val, err := ev.Eval(expr)
+		if err != nil {
+			return err
+		}
+		result = val
+	}
+	ev.stack.push(result)
 	return nil
 }
 
