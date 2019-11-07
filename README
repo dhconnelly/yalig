@@ -1,2 +1,18 @@
 yet another lisp in go
 ======================
+
+recursive-descent parser and tree-walking interpreter for a simple
+lisp disalect. see fib.lisp for an example of what's supported.
+
+- ints: +, -, =, <
+- strings: print
+- lists: first, rest, cons, empty
+- null
+- fn: lambdas w/capturing (closures)
+- if, seq, def, defun
+
+to run it:
+
+    go build
+    ./yalig fib.lisp
+
