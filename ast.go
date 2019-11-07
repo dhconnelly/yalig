@@ -22,6 +22,7 @@ type Visitor interface {
 	VisitCall(e *CallExpr) error
 	VisitFunc(e *FuncExpr) error
 	VisitDef(e *DefExpr) error
+	VisitDefun(e *DefunExpr) error
 	VisitIf(e *IfExpr) error
 	VisitSeq(e *SeqExpr) error
 	VisitList(e *ListExpr) error
@@ -50,6 +51,21 @@ func (e *CallExpr) String() string {
 	return fmt.Sprintf("CallExpr(Fn=%s, Args=%s)", e.Fn, e.Args)
 }
 
+// Defun := "(" "defun" ident "(" ident* ")" Expr ")"
+type DefunExpr struct {
+	Name   string
+	Params []*IdentExpr
+	Body   Expr
+}
+
+func (e *DefunExpr) visit(v Visitor) error {
+	return v.VisitDefun(e)
+}
+
+func (e *DefunExpr) String() string {
+	return fmt.Sprintf("DefunExpr(Name=%s', Params=%s, Body=%s)", e.Name, e.Params, e.Body)
+}
+
 // Func := "(" "fn" "(" ident* ")" Expr ")"
 type FuncExpr struct {
 	Names []*IdentExpr
@@ -61,7 +77,7 @@ func (e *FuncExpr) visit(v Visitor) error {
 }
 
 func (e *FuncExpr) String() string {
-	return fmt.Sprintf("FuncExpr(Names=%s, Body=%s", e.Names, e.Body)
+	return fmt.Sprintf("FuncExpr(Names=%s, Body=%s)", e.Names, e.Body)
 }
 
 // Def := "(" "def" ident Expr ")"

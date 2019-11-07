@@ -37,8 +37,8 @@ func NewEvaluator() Evaluator {
 
 func (ev *Evaluator) callLambda(fn LambdaVal, args []Value) (Value, error) {
 	// Check arity
-	if len(args) != len(fn.fn.Names) {
-		return nil, fmt.Errorf("bad arity: got %d, expected %d", len(fn.fn.Names), len(args))
+	if len(args) != len(fn.params) {
+		return nil, fmt.Errorf("bad arity: got %d, expected %d", len(args), len(fn.params))
 	}
 
 	// Set the context from the captured env
@@ -47,13 +47,13 @@ func (ev *Evaluator) callLambda(fn LambdaVal, args []Value) (Value, error) {
 
 	// Bind names to values
 	for i := 0; i < len(args); i++ {
-		name := fn.fn.Names[i].Ident
+		name := fn.params[i].Ident
 		val := args[i]
 		evalContext.Set(name, val)
 	}
 
 	lambdaEval := &Evaluator{ctx: evalContext}
-	return lambdaEval.Eval(fn.fn.Body)
+	return lambdaEval.Eval(fn.body)
 }
 
 func (ev *Evaluator) call(fnVal Value, args []Value) error {
@@ -61,7 +61,11 @@ func (ev *Evaluator) call(fnVal Value, args []Value) error {
 	case NullVal:
 		return fmt.Errorf("can't call null as function")
 	case BuiltInFuncVal:
-		ev.stack.push(fn.f(args[:fn.arity]...))
+		val, err := fn.f(args[:fn.arity]...)
+		if err != nil {
+			return err
+		}
+		ev.stack.push(val)
 		return nil
 	case LambdaVal:
 		val, err := ev.callLambda(fn, args)
@@ -91,10 +95,22 @@ func (ev *Evaluator) VisitCall(e *CallExpr) error {
 	return ev.call(val, args)
 }
 
+func (ev *Evaluator) VisitDefun(e *DefunExpr) error {
+	var fn LambdaVal
+	fn.ctx = ev.ctx.freeze()
+	fn.params = e.Params
+	fn.body = e.Body
+	fn.ctx.Set(e.Name, fn)
+	ev.ctx.Set(e.Name, fn)
+	ev.stack.push(Null)
+	return nil
+}
+
 func (ev *Evaluator) VisitFunc(e *FuncExpr) error {
 	var fn LambdaVal
 	fn.ctx = ev.ctx.freeze()
-	fn.fn = e
+	fn.params = e.Names
+	fn.body = e.Body
 	ev.stack.push(fn)
 	return nil
 }
@@ -157,6 +173,10 @@ func (ev *Evaluator) VisitList(e *ListExpr) error {
 }
 
 func (ev *Evaluator) VisitIdent(e *IdentExpr) error {
+	if e.Ident == "null" {
+		ev.stack.push(Null)
+		return nil
+	}
 	val, err := ev.ctx.Get(e.Ident)
 	if err != nil {
 		return err

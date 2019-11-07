@@ -81,14 +81,14 @@ func (l ListVal) String() string {
 
 type BuiltInFuncVal struct {
 	arity int
-	f     func(params ...Value) Value
+	f     func(params ...Value) (Value, error)
 }
 
 func (BuiltInFuncVal) Type() ValType {
 	return FuncT
 }
 
-func (f BuiltInFuncVal) Value() func(...Value) Value {
+func (f BuiltInFuncVal) Value() func(...Value) (Value, error) {
 	return f.f
 }
 
@@ -101,8 +101,9 @@ type Env interface {
 }
 
 type LambdaVal struct {
-	ctx *context
-	fn  *FuncExpr
+	ctx    *context
+	params []*IdentExpr
+	body   Expr
 }
 
 func (LambdaVal) Type() ValType {
@@ -114,7 +115,7 @@ func (l LambdaVal) Value() LambdaVal {
 }
 
 func (l LambdaVal) String() string {
-	return fmt.Sprintf("fn: (ctx: %#v) -> (fn: %#v)", l.ctx, l.fn)
+	return fmt.Sprintf("fn: (ctx: %#v) (%#v) -> (%#v)", l.ctx, l.params, l.body)
 }
 
 type BoolVal bool

@@ -53,6 +53,7 @@ func isOp(r rune) bool {
 var keywords = [...]string{
 	"fn",
 	"def",
+	"defun",
 	"if",
 	"seq",
 }

@@ -107,6 +107,42 @@ func (p *Parser) defExpr() (*DefExpr, error) {
 	return &DefExpr{name.Ident, binding}, nil
 }
 
+func (p *Parser) defunExpr() (*DefunExpr, error) {
+	p.eatLitOrDie("defun")
+	name, err := p.identExpr()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse defun: %w", err)
+	}
+	_, err = p.eat(LPAREN)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse fn: %w", err)
+	}
+	var params []*IdentExpr
+	for {
+		if tok, _ := p.l.Peek(); tok.Typ == RPAREN {
+			break
+		}
+		name, err := p.identExpr()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse fn: %w", err)
+		}
+		params = append(params, name)
+	}
+	_, err = p.eat(RPAREN)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse fn: %w", err)
+	}
+	body, err := p.Parse()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse fn: %w", err)
+	}
+	_, err = p.eat(RPAREN)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse fn: %w", err)
+	}
+	return &DefunExpr{name.Ident, params, body}, nil
+}
+
 func (p *Parser) ifExpr() (*IfExpr, error) {
 	p.eatLitOrDie("if")
 	ant, err := p.Parse()
@@ -220,6 +256,8 @@ func (p *Parser) sExpr() (Expr, error) {
 			return p.funcExpr()
 		case "def":
 			return p.defExpr()
+		case "defun":
+			return p.defunExpr()
 		case "if":
 			return p.ifExpr()
 		case "seq":

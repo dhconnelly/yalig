@@ -47,16 +47,18 @@
     1
     (+ (fib (- n 1)) (fib (- n 2)))))
 
+(print (first '(1 2 3)))
+(print (rest '(1 2 3)))
+
 ; syntax: seq
 ; types: null
+(print "defining foreach")
 (defun foreach (list f)
-  (if (= (first list) null)
+  (if (empty list)
     null
     (seq
       (f (first list))
-      (foreach (rest list)))))
+      (foreach (rest list) f))))
 
-(def lines (foreach cases print))
-
-; all together
-(foreach lines (fn (line) (print '(line "\n"))))
+(print "printing lines")
+(foreach cases print)
