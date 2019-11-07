@@ -22,33 +22,41 @@
     (print "bar")
     (print "baz")))
 
+; syntax: lambda, call, if
+; tokens: operators
+; types: function
+(def sum (fn (a b) (+ a b)))
+(print (sum 5 2))
+
+; closures
+(def x 17)
+(def testX
+  (fn (x)
+    (fn () x)))
+(print ((testX 13)))
+
 ; syntax: string
 ; tokens: double-quotes
 ; types: string
 (def greeting "Some fibonacci numbers:")
 (print greeting)
 
-; syntax: lambda, call, if
-; tokens: operators
-; types: function
-(def fib
-  (fn (n)
-    (if (< n 2)
-      1
-      (+ (fib (- n 1)) (fib (- n 2))))))
+; syntax: defun
+(defun fib (n)
+  (if (< n 2)
+    1
+    (+ (fib (- n 1)) (fib (- n 2)))))
 
 ; syntax: seq
 ; types: null
-(def foreach
-  (fn (list f)
-    (if (= (first list) null)
-      null
-      (seq
-        (f (first list))
-        (printall (rest list))))))
+(defun foreach (list f)
+  (if (= (first list) null)
+    null
+    (seq
+      (f (first list))
+      (foreach (rest list)))))
+
+(def lines (foreach cases print))
 
 ; all together
-(foreach cases
-  (fn (num)
-    (seq
-      (print '("fib(" num ") = " (fib num) "\n")))))
+(foreach lines (fn (line) (print '(line "\n"))))

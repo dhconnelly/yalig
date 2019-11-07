@@ -4,28 +4,6 @@ import (
 	"fmt"
 )
 
-type context struct {
-	scope map[string]Value
-	up    *context
-}
-
-func newContext() context {
-	return context{scope: make(map[string]Value)}
-}
-
-func (ctx *context) set(name string, val Value) {
-	ctx.scope[name] = val
-}
-
-func (ctx *context) get(name string) (Value, error) {
-	for cur := ctx; cur != nil; cur = ctx.up {
-		if val, ok := cur.scope[name]; ok {
-			return val, nil
-		}
-	}
-	return nil, fmt.Errorf("undefined: [%s]", name)
-}
-
 type valueStack struct {
 	stack []Value
 }
@@ -52,9 +30,30 @@ type Evaluator struct {
 func NewEvaluator() Evaluator {
 	ctx := newContext()
 	for name, fn := range builtIns {
-		ctx.set(name, fn)
+		ctx.Set(name, fn)
 	}
 	return Evaluator{ctx: ctx}
+}
+
+func (ev *Evaluator) callLambda(fn LambdaVal, args []Value) (Value, error) {
+	// Check arity
+	if len(args) != len(fn.fn.Names) {
+		return nil, fmt.Errorf("bad arity: got %d, expected %d", len(fn.fn.Names), len(args))
+	}
+
+	// Set the context from the captured env
+	evalContext := newContext()
+	evalContext.up = fn.ctx
+
+	// Bind names to values
+	for i := 0; i < len(args); i++ {
+		name := fn.fn.Names[i].Ident
+		val := args[i]
+		evalContext.Set(name, val)
+	}
+
+	lambdaEval := &Evaluator{ctx: evalContext}
+	return lambdaEval.Eval(fn.fn.Body)
 }
 
 func (ev *Evaluator) call(fnVal Value, args []Value) error {
@@ -63,6 +62,13 @@ func (ev *Evaluator) call(fnVal Value, args []Value) error {
 		return fmt.Errorf("can't call null as function")
 	case BuiltInFuncVal:
 		ev.stack.push(fn.f(args[:fn.arity]...))
+		return nil
+	case LambdaVal:
+		val, err := ev.callLambda(fn, args)
+		if err != nil {
+			return err
+		}
+		ev.stack.push(val)
 		return nil
 	default:
 		panic(fmt.Errorf("unknown function type: %s", fnVal))
@@ -86,6 +92,10 @@ func (ev *Evaluator) VisitCall(e *CallExpr) error {
 }
 
 func (ev *Evaluator) VisitFunc(e *FuncExpr) error {
+	var fn LambdaVal
+	fn.ctx = ev.ctx.freeze()
+	fn.fn = e
+	ev.stack.push(fn)
 	return nil
 }
 
@@ -94,7 +104,7 @@ func (ev *Evaluator) VisitDef(e *DefExpr) error {
 	if err != nil {
 		return err
 	}
-	ev.ctx.set(e.Name, val)
+	ev.ctx.Set(e.Name, val)
 	ev.stack.push(Null)
 	return nil
 }
@@ -147,7 +157,7 @@ func (ev *Evaluator) VisitList(e *ListExpr) error {
 }
 
 func (ev *Evaluator) VisitIdent(e *IdentExpr) error {
-	val, err := ev.ctx.get(e.Ident)
+	val, err := ev.ctx.Get(e.Ident)
 	if err != nil {
 		return err
 	}

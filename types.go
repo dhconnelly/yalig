@@ -96,6 +96,27 @@ func (f BuiltInFuncVal) String() string {
 	return fmt.Sprintf("func([%d]Value)", f.arity)
 }
 
+type Env interface {
+	Get(name string) (Value, error)
+}
+
+type LambdaVal struct {
+	ctx *context
+	fn  *FuncExpr
+}
+
+func (LambdaVal) Type() ValType {
+	return FuncT
+}
+
+func (l LambdaVal) Value() LambdaVal {
+	return l
+}
+
+func (l LambdaVal) String() string {
+	return fmt.Sprintf("fn: (ctx: %#v) -> (fn: %#v)", l.ctx, l.fn)
+}
+
 type BoolVal bool
 
 func (BoolVal) Type() ValType {

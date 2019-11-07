@@ -210,6 +210,8 @@ func (p *Parser) sExpr() (Expr, error) {
 		return nil, fmt.Errorf("failed to parse expr: %w", err)
 	}
 	switch tok.Typ {
+	case LPAREN:
+		fallthrough
 	case IDENT:
 		return p.callExpr()
 	case KEYWORD:
