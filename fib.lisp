@@ -7,7 +7,7 @@
 ; syntax: list
 ; tokens: quotes
 ; types: list
-(def cases '(0 1 2 max))
+(def cases '(0 1 2 3 4 5 6 max))
 (print cases)
 
 (print (< 5 (+ 2 1)))
@@ -60,5 +60,14 @@
       (f (first list))
       (foreach (rest list) f))))
 
-(print "printing lines")
+(print "defining map")
+(defun map (list f)
+  (if (empty list)
+    '()
+    (cons (f (first list)) (map (rest list) f))))
+
+(print "printing cases to fib")
 (foreach cases print)
+
+(print "print fibs")
+(foreach (map cases fib) print)

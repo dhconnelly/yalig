@@ -14,6 +14,11 @@ var builtIns = map[string]BuiltInFuncVal{
 		right := args[1].(NumVal)
 		return BoolVal(left.Value() < right.Value()), nil
 	}},
+	"-": {2, func(args ...Value) (Value, error) {
+		left := args[0].(NumVal)
+		right := args[1].(NumVal)
+		return NumVal(left.Value() - right.Value()), nil
+	}},
 	"+": {2, func(args ...Value) (Value, error) {
 		left := args[0].(NumVal)
 		right := args[1].(NumVal)
@@ -34,6 +39,11 @@ var builtIns = map[string]BuiltInFuncVal{
 			return BoolVal(true), nil
 		}
 		return nil, fmt.Errorf("bad type for '=': %s", args[0])
+	}},
+	"cons": {2, func(args ...Value) (Value, error) {
+		elem := args[0]
+		list := args[1].(ListVal)
+		return ListVal(append([]Value{elem}, list...)), nil
 	}},
 	"first": {1, func(args ...Value) (Value, error) {
 		list := args[0].(ListVal)
